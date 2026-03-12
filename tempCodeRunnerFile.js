@@ -13,13 +13,6 @@ app.get("/", (req, res) => {
   res.send("Hello Express!");
 });
 
-app.get("/about", (req, res) => {
-  const a = parseInt(req.query.a);
-  const b = parseInt(req.query.b);
-  const sum = a + b;
-  res.send(`The sum of ${a} and ${b} is ${sum}`);
-});
-
 app.listen(3000, () => {
   console.log("Server running at http://localhost:3000");
 });
