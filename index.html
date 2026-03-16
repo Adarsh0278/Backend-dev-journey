@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sum App</title>
+</head>
+<body>
+  <input type="text" placeholder="First value" id="a1" />
+  <input type="text" placeholder="Second value" id="b1" />
+  <button onclick="sumbition()">Submit</button>
+  <p id="result">Print result</p>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    function sumbition() {
+      const a = document.getElementById("a1").value;
+      const b = document.getElementById("b1").value;
+
+      axios.post("http://localhost:3000/sum", { a, b })
+        .then((response) => {
+          document.getElementById("result").innerText = "Sum = " + response.data.sum;
+        })
+        .catch((error) => {
+          console.error(error);
+          document.getElementById("result").innerText = "Something went wrong";
+        });
+    }
+  </script>
+</body>
+</html>
