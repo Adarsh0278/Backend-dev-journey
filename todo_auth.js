@@ -17,24 +17,19 @@ const users = [];
 
 
 
-function auth (req, res, next) {
-    const token = req.headers.authorization;
+function auth(req, res, next) {
+    const token = req.headers.authorization?.split(" ")[1];
 
-    if (token) {
-        jwt.verify(token, secretKey, (err, decoded) => {
-            if (err) {
-                res.status(401).send({
-                    message: "Unauthorized"
-                })
-            } else {
-                req.user = decoded;
-                next();
-            }
-        })
-    } else {
-        res.status(401).send({
-            message: "Unauthorized"
-        })
+    if (!token) {
+        return res.status(401).json({ message: "No token provided" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, secretKey);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        res.status(401).json({ message: "Invalid token" });
     }
 }
 
