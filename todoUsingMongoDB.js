@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { UserModel, TodoModel } = require('./db');
-
+const bycrypt = require('bcrypt');
 const app = express();
 app.use(express.json());
 
@@ -11,7 +11,7 @@ app.use(cors({
 }));
 
 const secretKey = 'your_secret_key';
-
+const saltRounds = 10;
 
 function auth(req, res, next) {
     const token = req.token || req.headers['authorization'];
@@ -31,9 +31,10 @@ function auth(req, res, next) {
 
 app.post('/signup', async (req, res) => {
     const { name, email, password } = req.body;
-
+    const hashedPassword = await bycrypt.hash(password, 6);
     try {
-        const user = new UserModel({ name, email, password });
+
+        const user = new UserModel({ name, email, password:hashedPassword });
         await user.save();
 
         res.status(201).json({ message: 'User created successfully' });
@@ -50,17 +51,33 @@ app.post('/signup', async (req, res) => {
 app.post('/signin', async (req, res) => {
     const { email, password } = req.body;
 
-    try{
-        const user = await UserModel.findOne({ email, password });
+    try {
+        const user = await UserModel.findOne({ email });
+
         if (!user) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
-        const token = jwt.sign({ id: user._id }, secretKey, { expiresIn: '1h' });
-        res.json({ token });    
-    } catch (error) {
-        res.status(500).json({ message: 'Error signing in', error: error.message });
-    }
 
+        const isMatch = await bycrypt.compare(password, user.password);
+
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        const token = jwt.sign(
+            { id: user._id },
+            secretKey,
+            { expiresIn: '1h' }
+        );
+
+        res.json({ token });
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error signing in',
+            error: error.message
+        });
+    }
 });
 
 
